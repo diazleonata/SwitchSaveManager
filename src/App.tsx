@@ -5,58 +5,56 @@ import viteLogo from "/vite.svg";
 import "./App.css";
 
 function App() {
-    const [selectedDir, setSelectedDir] = useState<string | null>(null);
+  const [selectedDir, setSelectedDir] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
-    const pickFolder = async () => {
-        try {
-            // Request permissions (no need to check manually)
-            await FilePicker.requestPermissions();
+  const pickFolder = async () => {
+    if (loading) return; // prevent spamming
+    setLoading(true);
 
-            // Pick directory
-            const result = await FilePicker.pickDirectory();
-            if (result.path) {
-                setSelectedDir(result.path);
-            }
-        } catch (err) {
-            console.error("Error picking folder:", err);
-            setSelectedDir("Error: Unable to pick folder");
-        }
-    };
+    try {
+      // Always request permissions first
+      await FilePicker.requestPermissions();
 
-    return (
-        <>
-            <div>
-                <a href="https://vite.dev" target="_blank" rel="noreferrer">
-                    <img src={viteLogo} className="logo" alt="Vite logo" />
-                </a>
-                <a href="https://react.dev" target="_blank" rel="noreferrer">
-                    <img
-                        src={reactLogo}
-                        className="logo react"
-                        alt="React logo"
-                    />
-                </a>
-            </div>
+      // Pick directory
+      const result = await FilePicker.pickDirectory();
+      if (result.path) {
+        setSelectedDir(result.path);
+      }
+    } catch (err) {
+      console.error("Error picking folder:", err);
+      setSelectedDir("Error: Unable to pick folder");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-            <h1>Vite + React</h1>
+  return (
+    <>
+      <div>
+        <a href="https://vite.dev" target="_blank" rel="noreferrer">
+          <img src={viteLogo} className="logo" alt="Vite logo" />
+        </a>
+        <a href="https://react.dev" target="_blank" rel="noreferrer">
+          <img src={reactLogo} className="logo react" alt="React logo" />
+        </a>
+      </div>
 
-            <div className="card">
-                <button onClick={pickFolder}>Select Folder</button>
-                {selectedDir && (
-                    <p>
-                        <strong>Selected folder:</strong> {selectedDir}
-                    </p>
-                )}
-                <p>
-                    Edit <code>src/App.tsx</code> and save to test HMR
-                </p>
-            </div>
+      <h1>Vite + React</h1>
 
-            <p className="read-the-docs">
-                Click on the Vite and React logos to learn more
-            </p>
-        </>
-    );
+      <div className="card">
+        <button onClick={pickFolder} disabled={loading}>
+          {loading ? "Opening…" : "Select Folder"}
+        </button>
+
+        {selectedDir && (
+          <p>
+            <strong>Selected folder:</strong> {selectedDir}
+          </p>
+        )}
+      </div>
+    </>
+  );
 }
 
 export default App;
