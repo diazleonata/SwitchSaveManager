@@ -26,16 +26,17 @@ jobs:
           node-version: '20'
 
       - name: Install dependencies
-        run: npm ci
-
+        uses: borales/actions-yarn@v4
+        with:
+          cmd: install
+          
       - name: Build web app
-        run: npm run build
+        uses: borales/actions-yarn@v4
+        with:
+          cmd: build
 
       - name: Sync Capacitor
-        run: npx cap sync android
-
-      - name: Make Gradlew executable
-        run: chmod +x android/gradlew
+        run: npx cap sync
 
       - name: Build APK
         working-directory: android
