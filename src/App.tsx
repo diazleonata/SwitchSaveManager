@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { FilePicker } from "@capawesome/capacitor-file-picker";
-import gameDB from "./data/eshop-slim.json"; // slim JSON
+import { Filesystem, Directory } from "@capacitor/filesystem";
+import gameDB from "./data/eshop-slim.json";
 
 type Game = {
   id: string;
@@ -9,50 +10,65 @@ type Game = {
 };
 
 export default function App() {
-  const [selected, setSelected] = useState<Game | null>(null);
+  const [games, setGames] = useState<Game[]>([]);
 
-  const pickSaveFolder = async () => {
+  const pickParentFolder = async () => {
     try {
-      // 1. Ask for dir
+      // 1. Pick the parent folder
       const result = await FilePicker.pickDirectory();
       if (!result.path) {
         alert("No folder picked");
         return;
       }
 
-      const path = result.path;
+      const parentPath = result.path;
 
-      // 2. Extract TitleID from folder name
-      // Example: /storage/emulated/0/Switch/Saves/01005CA01580E000
-      const parts = path.split("/");
-      const titleId = parts[parts.length - 1];
+      // 2. List subfolders (TitleIDs)
+      // ⚠️ depends on plugin support, example with Filesystem.readdir:
+      const dir = await Filesystem.readdir({
+        path: parentPath,
+        directory: Directory.External,
+      });
 
-      // 3. Lookup in JSON
-      const game = (gameDB as any)[titleId];
-
-      if (game) {
-        setSelected(game);
-      } else {
-        alert(`Unknown TitleID: ${titleId}`);
+      // 3. Match subfolder names against title DB
+      const found: Game[] = [];
+      for (const folder of dir.files) {
+        const titleId = folder.name;
+        const game = (gameDB as any)[titleId];
+        if (game) {
+          found.push(game);
+        } else {
+          found.push({
+            id: titleId,
+            name: "Unknown Game",
+            publisher: "Unknown",
+          });
+        }
       }
+
+      setGames(found);
     } catch (err) {
-      console.error("Error picking folder:", err);
+      console.error("Error:", err);
     }
   };
 
   return (
     <div style={{ padding: "1rem", fontFamily: "sans-serif" }}>
       <h1>Switch Save Manager</h1>
-      <button onClick={pickSaveFolder}>Pick Save Folder</button>
+      <button onClick={pickParentFolder}>Pick Saves Folder</button>
 
-      {selected ? (
-        <div style={{ marginTop: "1rem" }}>
-          <h2>{selected.name}</h2>
-          <p><b>ID:</b> {selected.id}</p>
-          <p><b>Publisher:</b> {selected.publisher}</p>
-        </div>
+      {games.length > 0 ? (
+        <ul>
+          {games.map((game) => (
+            <li key={game.id}>
+              <strong>{game.name}</strong> <br />
+              ID: {game.id} <br />
+              Publisher: {game.publisher}
+            </li>
+          ))}
+        </ul>
       ) : (
-        <p style={{ marginTop: "1rem" }}>No save selected yet</p>
+        <p>No saves listed yet</p>
       )}
     </div>
   );
