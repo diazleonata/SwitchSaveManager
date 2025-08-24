@@ -1,60 +1,59 @@
 import { useState } from "react";
 import { FilePicker } from "@capawesome/capacitor-file-picker";
-import reactLogo from "./assets/react.svg";
-import viteLogo from "/vite.svg";
-import "./App.css";
+import gameDB from "./data/eshop-slim.json"; // slim JSON
 
-function App() {
-  const [selectedDir, setSelectedDir] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+type Game = {
+  id: string;
+  name: string;
+  publisher: string;
+};
 
-  const pickFolder = async () => {
-    if (loading) return; // prevent spamming
-    setLoading(true);
+export default function App() {
+  const [selected, setSelected] = useState<Game | null>(null);
 
+  const pickSaveFolder = async () => {
     try {
-      // Always request permissions first
-      await FilePicker.requestPermissions();
-
-      // Pick directory
+      // 1. Ask for dir
       const result = await FilePicker.pickDirectory();
-      if (result.path) {
-        setSelectedDir(result.path);
+      if (!result.path) {
+        alert("No folder picked");
+        return;
+      }
+
+      const path = result.path;
+
+      // 2. Extract TitleID from folder name
+      // Example: /storage/emulated/0/Switch/Saves/01005CA01580E000
+      const parts = path.split("/");
+      const titleId = parts[parts.length - 1];
+
+      // 3. Lookup in JSON
+      const game = (gameDB as any)[titleId];
+
+      if (game) {
+        setSelected(game);
+      } else {
+        alert(`Unknown TitleID: ${titleId}`);
       }
     } catch (err) {
       console.error("Error picking folder:", err);
-      setSelectedDir("Error: Unable to pick folder");
-    } finally {
-      setLoading(false);
     }
   };
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank" rel="noreferrer">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank" rel="noreferrer">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
+    <div style={{ padding: "1rem", fontFamily: "sans-serif" }}>
+      <h1>Switch Save Manager</h1>
+      <button onClick={pickSaveFolder}>Pick Save Folder</button>
 
-      <h1>Vite + React</h1>
-
-      <div className="card">
-        <button onClick={pickFolder} disabled={loading}>
-          {loading ? "Opening…" : "Select Folder"}
-        </button>
-
-        {selectedDir && (
-          <p>
-            <strong>Selected folder:</strong> {selectedDir}
-          </p>
-        )}
-      </div>
-    </>
+      {selected ? (
+        <div style={{ marginTop: "1rem" }}>
+          <h2>{selected.name}</h2>
+          <p><b>ID:</b> {selected.id}</p>
+          <p><b>Publisher:</b> {selected.publisher}</p>
+        </div>
+      ) : (
+        <p style={{ marginTop: "1rem" }}>No save selected yet</p>
+      )}
+    </div>
   );
 }
-
-export default App;
