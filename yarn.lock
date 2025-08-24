@@ -1059,6 +1059,11 @@ convert-source-map@^2.0.0:
   resolved "https://registry.yarnpkg.com/convert-source-map/-/convert-source-map-2.0.0.tgz#4b560f649fc4e918dd0ab75cf4961e8bc882d82a"
   integrity sha512-Kvp459HrV2FEJ1CAsi1Ku+MY3kasH19TFykTz2xWmMeq6bk2NU3XXvfJ+Q61m0xktWwt+1HSYf3JZsTms3aRJg==
 
+cordova-plugin-file@^8.1.3:
+  version "8.1.3"
+  resolved "https://registry.yarnpkg.com/cordova-plugin-file/-/cordova-plugin-file-8.1.3.tgz#2fe4405a7dfdab1bfc2ccc882c37b1e8029f81b6"
+  integrity sha512-KlnP3CapNIsKncoWV5lYcIFYDPl0aZ1J3AH3QESlQX1Cb6Ct0p6GrAUvINyrFsjPbWHj8i0b6la6udVsghbATg==
+
 cross-spawn@^7.0.3, cross-spawn@^7.0.6:
   version "7.0.6"
   resolved "https://registry.yarnpkg.com/cross-spawn/-/cross-spawn-7.0.6.tgz#8a58fe78f00dcd70c370451759dfbfaf03e8ee9f"
